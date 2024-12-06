@@ -10,7 +10,7 @@
             height: 200px;
             float: left;
         }
-     
+
         .highcharts-figure,
         .highcharts-data-table table {
             width: 600px;
@@ -78,47 +78,61 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <figure class="highcharts-figure">
         <div id="container-energy" class="chart-container"></div>
-        <div id="container-total" class="chart-container"></div>
+        <div id="container-water" class="chart-container"></div>
         <p class="highcharts-description">
-            Chart follow energy and water.
+            Biểu đồ.
         </p>
         <button id="exportButton">
-            Export Excel
+            Xuất ra Excel
         </button>
     </figure>
-    <input type="checkbox" id="V3"> 
-    <input type="checkbox" id="V6"> 
+    <input type="checkbox" id="V3">
+    <input type="checkbox" id="V6">
     <script>
         const eraWidget = new EraWidget();
         let config = null;
         let dataBuffer = [];
 
-        let V3Value = 0;
-        let V6Value = 0;
-
         eraWidget.onConfiguration((configuration) => {
-            config = configuration.realtime_configs[0];
+            console.log('Configuration received:', configuration); 
+            config = configuration.realtime_configs.reduce((acc, curr) => {
+                acc[curr.name] = curr.id;
+                return acc;
+            }, {});
         });
 
         eraWidget.onValues((values) => {
             const energyInput = document.getElementById('V3');
             const waterInput = document.getElementById('V6');
+            console.log('Received values:', values); 
+            if (config) {
+                const energyValue = values[config['V3']] ? values[config['V3']].value : 0;
+                const waterValue = values[config['V6']] ? values[config['V6']].value : 0;
 
-            V3Value = values[config.V3].value;
-            V6Value = values[config.V6].value;
+                console.log('Temperature Value:', energyValue); 
+                console.log('Humidity Value:', waterValue); 
 
-            energyInput.checked = V3Value > 0;
-            waterInput.checked = V6Value > 0;
+                energyInput.checked = energyValue > 0;
+                waterInput.checked = waterValue > 0;
 
-            chartEnergy.series[0].setData([V3Value]);
-            chartTotal.series[0].setData([V6Value]);
+                const energyChart = Highcharts.charts[0];
+                const waterChart = Highcharts.charts[1];
 
-            dataBuffer.push([Date.now(), V3Value, V6Value]);
-        });     
+                if (energyChart) {
+                    const energyPoint = energyChart.series[0].points[0];
+                    energyPoint.update(energyValue);
+                    dataBuffer.push([Date.now(), energyValue, waterValue]);
+                }
+
+                if (waterValue) {
+                    const waterPoint = waterChart.series[0].points[0];
+                    waterPoint.update(waterValue);
+                }
+            }
+        });
 
         eraWidget.ready();
 
-        //cấu hình chung
         const gaugeOptions = {
             chart: {
                 type: 'solidgauge'
@@ -187,7 +201,7 @@
                     min: 0,
                     max: 100,
                     title: {
-                        text: 'Điện năng tiêu thụ'
+                        text: 'Điện năng'
                     }
                 },
 
@@ -196,7 +210,7 @@
                 },
 
                 series: [{
-                    name: 'Điện năng tiêu thụ',
+                    name: 'Điện năng',
                     data: [0],
                     dataLabels: {
                         format:
@@ -213,18 +227,18 @@
             }));
 
         // Đồng hồ nước
-        const chartTotal = Highcharts.chart(
-            'container-total', Highcharts.merge(gaugeOptions, {
+        const chartWater = Highcharts.chart(
+            'container-water', Highcharts.merge(gaugeOptions, {
                 yAxis: {
                     min: 0,
                     max: 100,
                     title: {
-                        text: 'Lưu lượng nước tiêu thụ'
+                        text: 'Nước'
                     }
                 },
 
                 series: [{
-                    name: 'Lưu lượng nước tiêu thụ',
+                    name: 'Nước',
                     data: [0],
                     dataLabels: {
                         format:
@@ -247,8 +261,8 @@
                 Water: point[2]
             })));
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Theo dõi dữ liệu');
-            XLSX.writeFile(wb, 'data.xlsx');
+            XLSX.utils.book_append_sheet(wb, ws, 'Dữ liệu cảm biến');
+            XLSX.writeFile(wb, 'du_lieu_cam_bien.xlsx');
         });
     </script>
 </body>
