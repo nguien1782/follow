@@ -101,14 +101,19 @@
         });
 
         eraWidget.onValues((values) => {
-            const energyInput = document.getElementByteId('V3');
-            const waterInput = document.getElementByteId('V6');
+            const energyInput = document.getElementById('V3');
+            const waterInput = document.getElementById('V6');
 
-            V3Value = values[config.id].value;
-            V6Value = values[config.id].value;
+            V3Value = values['V3'].value;
+            V6Value = values['V6'].value;
 
-            energyInput.checked = values[config.id].value > 0;
-            waterInput.checked = values[config.id].value > 0;
+            energyInput.checked = V3Value > 0;
+            waterInput.checked = V6Value > 0;
+
+            chartEnergy.series[0].setData([V3Value]);
+            chartTotal.series[0].setData([V6Value]);
+
+            dataBuffer.push([Date.now(), V3Value, V6Value]);
         });     
 
         eraWidget.ready();
