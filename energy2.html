@@ -104,8 +104,8 @@
             const energyInput = document.getElementById('V3');
             const waterInput = document.getElementById('V6');
 
-            V3Value = values['V3'].value;
-            V6Value = values['V6'].value;
+            V3Value = values[config.V3].value;
+            V6Value = values[config.V6].value;
 
             energyInput.checked = V3Value > 0;
             waterInput.checked = V6Value > 0;
