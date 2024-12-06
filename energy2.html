@@ -177,7 +177,7 @@
 
         // Đồng hồ điện
         const chartEnergy = Highcharts.chart(
-            'V3Value', Highcharts.merge(gaugeOptions, {
+            'container-energy', Highcharts.merge(gaugeOptions, {
                 yAxis: {
                     min: 0,
                     max: 100,
@@ -209,7 +209,7 @@
 
         // Đồng hồ nước
         const chartTotal = Highcharts.chart(
-            'V6Value', Highcharts.merge(gaugeOptions, {
+            'container-total', Highcharts.merge(gaugeOptions, {
                 yAxis: {
                     min: 0,
                     max: 100,
